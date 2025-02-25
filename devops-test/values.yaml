@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: kubapol/devops-test
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+livenessProbe:
+  path: /
+  port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+readinessProbe:
+  path: /
+  port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"

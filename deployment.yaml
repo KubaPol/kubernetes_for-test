@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-test
+  labels:
+    app: devops-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-test
+  template:
+    metadata:
+      labels:
+        app: devops-test
+    spec:
+      containers:
+      - name: devops-test
+        image: kubapol/devops-test:latest
+        ports:
+          - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

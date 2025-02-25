@@ -1,0 +1,52 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/devops-test:latest .
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/devops-test:latest
+
+    # --- Ниже код деплоя в Kubernetes (закомментирован, но остаётся как пример) ---
+
+    # - name: Set up Kubernetes CLI (kubectl)
+    #   uses: azure/setup-kubectl@v3
+    #   with:
+    #     version: 'latest'
+
+    # - name: Configure kubeconfig
+    #   run: |
+    #     echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+    #     mkdir -p ~/.kube
+    #     mv kubeconfig ~/.kube/config
+
+    # - name: Set up Helm
+    #   uses: azure/setup-helm@v3
+
+    # - name: Helm install/upgrade
+    #   run: |
+    #     helm upgrade --install devops-test ./devops-test \
+    #       --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/devops-test \
+    #       --set image.tag=latest
