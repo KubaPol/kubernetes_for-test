@@ -42,3 +42,15 @@ kubectl delete pod <pod-name> -n kube-system
 kubectl get pods -n kube-system
 
 все это происходит потому что это часть механизма самовостановления кубернетес
+
+CoreDNS и другие поды с ReplicaSet (например, kube-proxy):
+
+они контролируют deployment/daemonSet и если удалить, то контроллер Deployment сразу создаст новый под, так как он следит за количествомреплик
+
+Kube-apiserver, kube-controller-manager
+
+эти компоненты управляются static pods, которые определены в манифестах(/etc/kubernetes/manifests/)
+
+kublet отслеживает файлы в этом каталоге и если какой-то под исчезает, то он пересоздает его
+
+
