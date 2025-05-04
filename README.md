@@ -1,56 +1,64 @@
-Способы проверки работы приложения в кубернетес:
+# Kubernetes DevOps Test Project
 
-kubectl logs deployment/devops-test
+Репозиторий с выполнением тестового задания по DevOps: от создания Docker-образа до деплоя в Kubernetes с использованием Helm и CI/CD.
 
-Проверка доступности сервиса:
+## Содержание задания:
 
-kubectl get svc devops-test-service
+1. **Docker-образ**
+   - Работает под UID `1001`.
+   - Запускает web-сервер на порту `8000`.
+   - Отдаёт содержимое `/app`, например, `http://localhost:8000/test.html`.
+   - Образ доступен на Docker Hub: `docker.io/yourusername/imagename`.
 
-kubectl port-forward svc/devops-test-service 8000:8000
+2. **Kubernetes-манифесты**
+   - Деплой приложения с liveness/readiness-пробами.
+   - Настроены ресурсы (limits и requests).
+   - Файлы в директории `k8s/`.
 
-curl -v http://localhost:8000
+3. **Helm-чарт**
+   - Универсализирован деплой с возможностью конфигурации.
+   - Размещён в директории `helm/`.
 
-Проверка подов:
+4. **CI/CD**
+   - Скрипт сборки и деплоя образа: `cicd/deploy.sh`.
+   - Готов к интеграции с GitLab CI или GitHub Actions.
 
-kubectl get pods
+5. **Проверка работоспособности**
+   - `curl http://<pod-ip>:8000/test.html`
+   - `kubectl logs <pod>`
+   - `kubectl get pods` и `kubectl describe pod <pod>`
 
-kubectl describe pod <pod-name>
+6. **Обновление деплойментов**
+   - Команда: `bash restart-all-deployments.sh`
+   - Обновляет все деплойменты, содержащие `test` в имени.
 
+7. **Удаление подов из `kube-system`**
+   - Скрипт: `bash delete-kube-system-pods.sh`
+   - Объяснение:
+     - `core-dns` восстанавливается ReplicaSet'ом.
+     - `kube-apiserver` — static pod, управляется kubelet с ноды.
 
+---
 
+## Навыки, демонстрируемые в проекте:
 
-Рестарт все deployments с подстрокой test в названии
+- Создание Docker-образов под конкретные требования
+- Работа с Kubernetes (манифесты, ресурсы, probes)
+- Helm — шаблонизация и параметризация деплойментов
+- CI/CD пайплайн деплоя
+- Умение отлаживать и управлять кластером
 
-kubectl get deployments | grep "test" | awk '{print $1}' | xargs kubectl rollout restart deploymenit 
+---
 
-или kubectl get deployments | grep "test" | awk '{print $1}' | xargs kubectl rollout restart deployment
+## Как запустить
 
-Проверка статуса:
+```bash
+# Сборка Docker-образа
+docker build -t yourusername/imagename .
 
-kubectl get pods
+# Деплой через kubectl
+kubectl apply -f k8s/
 
-kubectl describe deployment devops-test
-
-
-
-Удаление подов в куб и почему они восстанавливаются:
-
-kubectl delete pod <pod-name> -n kube-system
-
-а после через пару сек снова появится 
-
-kubectl get pods -n kube-system
-
-все это происходит потому что это часть механизма самовостановления кубернетес
-
-CoreDNS и другие поды с ReplicaSet (например, kube-proxy):
-
-они контролируют deployment/daemonSet и если удалить, то контроллер Deployment сразу создаст новый под, так как он следит за количествомреплик
-
-Kube-apiserver, kube-controller-manager
-
-эти компоненты управляются static pods, которые определены в манифестах(/etc/kubernetes/manifests/)
-
-kublet отслеживает файлы в этом каталоге и если какой-то под исчезает, то он пересоздает его
-
+# Либо деплой через Helm
+helm install myapp helm/ --values helm/values.yaml
 
